@@ -10,6 +10,7 @@ on:
     branches: [main]
 
 jobs:
+  # Job 1: lógica de negocio (Jest + mocks en memoria, rápido).
   test:
     runs-on: ubuntu-latest
     defaults:
@@ -32,3 +33,39 @@ jobs:
 
       - name: Correr los tests
         run: npm test
+
+  # Job 2: reglas de Firestore (necesita el emulador real, que a su vez
+  # necesita Java). Corre por separado del job anterior porque usa un
+  # entorno distinto (más pesado, más lento) — así el job 1 sigue siendo
+  # rápido para el caso común.
+  test-rules:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: functions
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Java 21 (lo exige el emulador de Firestore)
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Instalar Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Correr los tests de reglas de Firestore
+        run: npm run test:rules
