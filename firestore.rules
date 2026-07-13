@@ -1,0 +1,127 @@
+rules_version = '2';
+
+// AcademiApp — Reglas de Firestore (actualizado hasta Bloque 9).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+
+      // El usuario solo puede leer su propio documento.
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Permite al admin listar/contar toda la colección (usado por el
+      // dashboard del panel admin: getDocs(collection(db,"users"))).
+      allow list: if request.auth != null && request.auth.token.admin == true;
+
+      // ALTA (registro por correo o Google, tras elegir plan):
+      // el documento nace completo en una sola escritura. Desde el cliente
+      // SOLO puede nacer en plan "free". "premium" lo asigna siempre
+      // procesarPagoCulqi (Cloud Function con Admin SDK, Bloque 2), que
+      // no pasa por estas reglas.
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.plan == "free"
+        && request.resource.data.premium_hasta == null
+        && request.resource.data.ultimo_bloque_examen_abierto == null;
+
+      // REPARACIÓN ÚNICA: documentos que ya existían sin el campo "plan"
+      // (datos de prueba de seed_firestore.dart, cuentas creadas antes de
+      // este bloque). El cliente puede completarlo a "free" una sola vez.
+      // Cualquier otro cambio a plan/premium_hasta/ultimo_bloque_examen_abierto
+      // queda bloqueado para el cliente a partir de aquí: lo hacen
+      // procesarPagoCulqi, la función programada de expiración de premium
+      // (Bloque 2) y la función de límite diario de exámenes (Bloque 5),
+      // todas vía Admin SDK.
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && resource.data.plan == null
+        && request.resource.data.plan == "free"
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['plan', 'premium_hasta', 'ultimo_bloque_examen_abierto']);
+
+      // Bloque 9 — token(s) de notificaciones push del propio dispositivo.
+      // Se puede actualizar en cualquier momento (no es "de una sola vez"
+      // como el repair de arriba) porque cambia cada vez que el usuario
+      // reinstala la app o cambia de celular.
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['fcmTokens']);
+
+      // Progreso individual del quiz (aprobado/intentos/mejor puntaje por
+      // nivel). Es del alumno, solo él lo lee. Nadie desde el cliente
+      // escribe aquí — lo hace enviarResultadoQuiz (Cloud Function,
+      // Admin SDK), para que nadie pueda "aprobarse" un nivel a mano.
+      match /progresoQuiz/{docId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+      }
+
+      // Historial de exámenes resueltos (nota, no respuestas expuestas de
+      // otros). Solo el propio alumno lo lee. Nadie desde el cliente
+      // escribe — lo hace enviarResultadoExamen (Cloud Function).
+      match /examenesResueltos/{docId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Bloque 2 — comprobantes de pago manual por Yape (plan B si falla
+    // Culqi). El cliente solo puede CREAR su propia solicitud en estado
+    // "pendiente"; aprobarla (y por lo tanto tocar el plan del usuario) es
+    // trabajo del panel de administración (Bloque 8) o de un admin manual
+    // en la consola — nunca del cliente.
+    match /pagos/{pagoId} {
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.estado == "pendiente";
+      allow read: if request.auth != null
+        && (resource.data.uid == request.auth.uid
+            || request.auth.token.admin == true);
+    }
+
+    // Bloque 4 — catálogo de cursos: todo usuario autenticado puede leer
+    // los cursos y sus temas (el video es gratis para todos). Nadie desde
+    // el cliente puede crear/editar/borrar cursos — eso es del panel de
+    // administración (Bloque 8), con custom claim admin.
+    match /cursos/{cursoId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+
+      match /temas/{temaId} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.token.admin == true;
+
+        match /premium/{docId} {
+          // Antes solo leían los alumnos Premium. Ahora el admin también
+          // necesita leer (para revisar el quiz generado en el panel) y
+          // escribir (para aprobar/editar el borrador antes de que un
+          // alumno lo vea) — la generación en sí sigue siendo solo vía
+          // Cloud Function (necesita la API key de Gemini como secreto),
+          // pero aprobar/editar el borrador ya generado se hace directo
+          // desde el panel.
+          allow read: if request.auth != null && (
+            request.auth.token.admin == true ||
+            get(/databases/$(database)/documents/users/$(request.auth.uid)).data.plan == 'premium'
+          );
+          allow write: if request.auth != null && request.auth.token.admin == true;
+        }
+      }
+    }
+
+    // Bloque 5 — exámenes pasados y tipo admisión.
+    match /examenesIndice/{examenId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    match /examenes/{examenId} {
+      allow read: if false;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // pagos_culqi (auditoría de cargos aprobados) y cualquier otra
+    // colección no listada aquí quedan denegadas por defecto para el
+    // cliente — solo las Cloud Functions (Admin SDK) escriben ahí.
+  }
+}

@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AcademiApp — Preparación para el examen de admisión</title>
+    <meta
+      name="description"
+      content="AcademiApp: cursos, exámenes pasados, simulacros de admisión y tutor con IA para tu preparación preuniversitaria."
+    />
+    <style>
+      :root {
+        --bg: #0a0a0a;
+        --card: #1a1a1a;
+        --gold: #ffb800;
+        --text: #ffffff;
+        --text2: rgba(255, 255, 255, 0.6);
+        --text3: rgba(255, 255, 255, 0.35);
+        --border: rgba(255, 255, 255, 0.08);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.6;
+      }
+      .wrap {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 0 24px;
+      }
+
+      header {
+        padding: 60px 0 40px;
+        text-align: center;
+        border-bottom: 1px solid var(--border);
+      }
+      .logo {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      .logo span {
+        color: var(--gold);
+      }
+      header h1 {
+        margin-top: 24px;
+        font-size: 34px;
+        font-weight: 800;
+        max-width: 620px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      header p {
+        margin-top: 14px;
+        color: var(--text2);
+        font-size: 16px;
+        max-width: 520px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      section {
+        padding: 56px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      section:last-of-type {
+        border-bottom: none;
+      }
+      h2 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+
+      .grid3 {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+      }
+      .card h3 {
+        font-size: 15px;
+        margin-bottom: 8px;
+        color: var(--gold);
+      }
+      .card p {
+        color: var(--text2);
+        font-size: 13px;
+      }
+
+      .planes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+      }
+      .plan {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 28px;
+      }
+      .plan.destacado {
+        border-color: var(--gold);
+      }
+      .plan .nombre {
+        font-size: 13px;
+        color: var(--text2);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .plan .precio {
+        font-size: 32px;
+        font-weight: 800;
+        margin: 10px 0 4px;
+      }
+      .plan .precio small {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--text2);
+      }
+      .plan ul {
+        margin-top: 16px;
+        list-style: none;
+      }
+      .plan li {
+        font-size: 14px;
+        color: var(--text2);
+        padding: 6px 0;
+        border-top: 1px solid var(--border);
+      }
+      .plan li:first-child {
+        border-top: none;
+      }
+
+      p.legal {
+        color: var(--text2);
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+
+      footer {
+        padding: 36px 0 60px;
+        text-align: center;
+        color: var(--text3);
+        font-size: 13px;
+      }
+      footer a {
+        color: var(--gold);
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <div class="logo">Academi<span>App</span></div>
+        <h1>Prepárate para tu examen de admisión, con IA de tu lado</h1>
+        <p>
+          Cursos por tema, exámenes de años anteriores, simulacros de admisión
+          con tiempo real, y un tutor con inteligencia artificial disponible
+          cuando lo necesites.
+        </p>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <h2>¿Qué encuentras en AcademiApp?</h2>
+        <div class="grid3">
+          <div class="card">
+            <h3>📚 Cursos por tema</h3>
+            <p>
+              Videoclases organizadas por curso y tema, con material de apoyo
+              descargable.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🤖 Tutor con IA</h3>
+            <p>
+              Resuelve tus dudas sobre cada tema, basado en el contenido real de
+              la clase.
+            </p>
+          </div>
+          <div class="card">
+            <h3>📝 Quiz por nivel</h3>
+            <p>
+              Preguntas de nivel básico, intermedio y avanzado para medir tu
+              dominio de cada tema.
+            </p>
+          </div>
+          <div class="card">
+            <h3>🗂️ Exámenes pasados</h3>
+            <p>
+              Exámenes ordinarios y de exonerados de procesos anteriores, para
+              practicar con casos reales.
+            </p>
+          </div>
+          <div class="card">
+            <h3>⏱️ Simulacro de admisión</h3>
+            <p>
+              Exámenes cronometrados que replican las condiciones del examen
+              real.
+            </p>
+          </div>
+          <div class="card">
+            <h3>📈 Panel de rendimiento</h3>
+            <p>
+              Sigue tu progreso por curso y tema, y tu historial de exámenes
+              rendidos.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2>Planes</h2>
+        <div class="planes">
+          <div class="plan">
+            <div class="nombre">Free</div>
+            <div class="precio">S/ 0</div>
+            <ul>
+              <li>Acceso a videoclases de todos los cursos</li>
+              <li>1 examen pasado por día</li>
+              <li>Sin chat con tutor IA ni quiz por tema</li>
+              <li>Sin simulacros de admisión</li>
+            </ul>
+          </div>
+          <div class="plan destacado">
+            <div class="nombre">Premium</div>
+            <div class="precio">S/ 29 <small>/ 90 días</small></div>
+            <ul>
+              <li>Todo lo del plan Free</li>
+              <li>Exámenes pasados sin límite diario</li>
+              <li>Chat con tutor IA en cada tema</li>
+              <li>Quiz por nivel (básico, intermedio, avanzado)</li>
+              <li>Simulacros de admisión cronometrados</li>
+              <li>Panel de rendimiento completo</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2>Términos y condiciones</h2>
+        <p class="legal">
+          Al suscribirte al plan Premium de AcademiApp, aceptas un cargo único
+          de S/ 29.00 (veintinueve soles) que otorga acceso a las funciones
+          Premium por un periodo de 90 días calendario. Al vencer el periodo, la
+          cuenta vuelve automáticamente al plan Free; no se realizan cargos
+          recurrentes automáticos.
+        </p>
+        <p class="legal">
+          Los pagos se procesan a través de Culqi (tarjeta) o Yape (validación
+          manual). AcademiApp no almacena datos de tarjetas de crédito o débito:
+          esa información es gestionada directamente por la pasarela de pago.
+        </p>
+        <p class="legal">
+          Para solicitudes de reembolso o soporte sobre un pago, escribe a
+          <a href="mailto:elbrayanllampasiespino@gmail.com"
+            >elbrayanllampasiespino@gmail.com</a
+          >.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2>Privacidad</h2>
+        <p class="legal">
+          AcademiApp recopila los datos mínimos necesarios para operar el
+          servicio: nombre, correo, carrera de interés y progreso académico
+          dentro de la app. Estos datos no se venden ni se comparten con
+          terceros con fines publicitarios.
+        </p>
+        <p class="legal">
+          Los pagos con tarjeta se procesan mediante Culqi bajo sus propias
+          políticas de seguridad (PCI-DSS); AcademiApp nunca ve ni guarda el
+          número completo de tu tarjeta.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap">
+        <h2>Contacto</h2>
+        <p class="legal">
+          Correo de soporte:
+          <a href="mailto:elbrayanllampasiespino@gmail.com"
+            >elbrayanllampasiespino@gmail.com</a
+          >
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        AcademiApp © 2026 — Plataforma de preparación preuniversitaria
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "appMovil": "app-movil-ebc90",
+    "default": "app-movil-ebc90"
+  },
+  "targets": {},
+  "etags": {}
+}

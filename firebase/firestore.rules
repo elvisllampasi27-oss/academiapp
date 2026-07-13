@@ -1,0 +1,43 @@
+rules_version = '2';
+
+// AcademiApp — Reglas de Firestore (Bloque 1: solo colección "users").
+// Se irán ampliando en bloques posteriores (progreso de quizzes, panel de
+// rendimiento, exámenes, etc.). No tocar aquí lo que no sea "users" todavía.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+
+      // El usuario solo puede leer su propio documento.
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // ALTA (registro por correo o Google, tras elegir plan):
+      // el documento nace completo en una sola escritura. Desde el cliente
+      // SOLO puede nacer en plan "free". "premium" lo asigna siempre
+      // procesarPagoCulqi (Cloud Function con Admin SDK, Bloque 2), que
+      // no pasa por estas reglas.
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.uid == userId
+        && request.resource.data.plan == "free"
+        && request.resource.data.premium_hasta == null
+        && request.resource.data.ultimo_bloque_examen_abierto == null;
+
+      // REPARACIÓN ÚNICA: documentos que ya existían sin el campo "plan"
+      // (datos de prueba de seed_firestore.dart, cuentas creadas antes de
+      // este bloque). El cliente puede completarlo a "free" una sola vez.
+      // Cualquier otro cambio a plan/premium_hasta/ultimo_bloque_examen_abierto
+      // queda bloqueado para el cliente a partir de aquí: lo hacen
+      // procesarPagoCulqi, la función programada de expiración de premium
+      // (Bloque 2) y la función de límite diario de exámenes (Bloque 5),
+      // todas vía Admin SDK.
+      allow update: if request.auth != null
+        && request.auth.uid == userId
+        && resource.data.plan == null
+        && request.resource.data.plan == "free"
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['plan', 'premium_hasta', 'ultimo_bloque_examen_abierto']);
+    }
+  }
+}

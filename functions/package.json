@@ -1,0 +1,21 @@
+{
+  "name": "functions",
+  "description": "Cloud Functions para AcademiApp (pagos Culqi, expiracion de premium, chat con tutor IA)",
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "firebase-functions": "^6.0.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "firebase-functions-test": "^3.4.0"
+  },
+  "private": true
+}

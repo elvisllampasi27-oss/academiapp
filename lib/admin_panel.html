@@ -1,0 +1,2082 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AcademiApp — Panel Admin</title>
+    <style>
+      :root {
+        --bg: #0a0a0a;
+        --bg2: #111111;
+        --card: #1a1a1a;
+        --card2: #222222;
+        --border: rgba(255, 255, 255, 0.08);
+        --gold: #ffb800;
+        --green: #4caf50;
+        --red: #f44336;
+        --text: #ffffff;
+        --text2: rgba(255, 255, 255, 0.5);
+        --text3: rgba(255, 255, 255, 0.25);
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, sans-serif;
+        min-height: 100vh;
+      }
+      .hidden {
+        display: none !important;
+      }
+
+      /* ---------- LOGIN ---------- */
+      #login-screen {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #login-box {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px;
+        width: 320px;
+      }
+      #login-box h2 {
+        margin-bottom: 20px;
+        font-size: 18px;
+      }
+      #login-box input {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        color: var(--text);
+        margin-bottom: 12px;
+        font-size: 13px;
+      }
+      #login-box button {
+        width: 100%;
+        background: var(--gold);
+        color: #000;
+        border: none;
+        border-radius: 8px;
+        padding: 11px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .alert {
+        display: none;
+        font-size: 12px;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+      }
+      .alert.show {
+        display: block;
+      }
+      .alert-error {
+        background: rgba(244, 67, 54, 0.12);
+        color: var(--red);
+      }
+      .alert-success {
+        background: rgba(76, 175, 80, 0.12);
+        color: var(--green);
+      }
+
+      /* ---------- LAYOUT ---------- */
+      #app {
+        display: none;
+      }
+      #app.show {
+        display: flex;
+        min-height: 100vh;
+      }
+      #sidebar {
+        width: 220px;
+        background: var(--bg2);
+        border-right: 1px solid var(--border);
+        padding: 20px 14px;
+        flex-shrink: 0;
+      }
+      #sidebar h2 {
+        font-size: 15px;
+        margin-bottom: 20px;
+      }
+      #sidebar nav a {
+        display: block;
+        color: var(--text2);
+        text-decoration: none;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        margin-bottom: 4px;
+        cursor: pointer;
+      }
+      #sidebar nav a.active,
+      #sidebar nav a:hover {
+        background: rgba(255, 184, 0, 0.1);
+        color: var(--gold);
+      }
+      #btn-logout {
+        margin-top: 30px;
+        width: 100%;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text2);
+        border-radius: 8px;
+        padding: 10px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      #main {
+        flex: 1;
+        padding: 30px;
+        overflow-y: auto;
+      }
+      .page {
+        display: none;
+      }
+      .page.active {
+        display: block;
+      }
+      .page h1 {
+        font-size: 22px;
+        margin-bottom: 4px;
+      }
+      .subtitle {
+        color: var(--text2);
+        font-size: 13px;
+        margin-bottom: 20px;
+      }
+
+      /* ---------- CARDS / FORMS ---------- */
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px;
+        margin-bottom: 16px;
+      }
+      .card-header {
+        margin-bottom: 12px;
+      }
+
+      /* ---------- MODAL (Quiz IA) ---------- */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 40px 20px;
+        overflow-y: auto;
+        z-index: 100;
+      }
+      .modal-overlay.show {
+        display: flex;
+      }
+      .modal-box {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 22px;
+        width: 100%;
+        max-width: 560px;
+        max-height: calc(100vh - 80px);
+        overflow-y: auto;
+      }
+      .modal-close {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text2);
+        border-radius: 8px;
+        width: 28px;
+        height: 28px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 1;
+      }
+      .card-header h3 {
+        font-size: 14px;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+      .form-group {
+        margin-bottom: 12px;
+      }
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--text2);
+        margin-bottom: 5px;
+      }
+      input,
+      select {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 9px 11px;
+        color: var(--text);
+        font-size: 13px;
+      }
+      .btn {
+        border: none;
+        border-radius: 8px;
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn-gold {
+        background: var(--gold);
+        color: #000;
+      }
+      .btn-outline {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text2);
+      }
+      .btn-sm {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .drop-zone {
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+        cursor: pointer;
+        color: var(--text2);
+        font-size: 13px;
+      }
+      .drop-zone.drag-over {
+        border-color: var(--gold);
+        background: rgba(255, 184, 0, 0.05);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th {
+        text-align: left;
+        color: var(--text2);
+        font-weight: 500;
+        padding: 8px;
+        border-bottom: 1px solid var(--border);
+        font-size: 11px;
+      }
+      td {
+        padding: 10px 8px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .tabs {
+        display: flex;
+        gap: 6px;
+      }
+      .tab {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text2);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .tab.active {
+        background: var(--gold);
+        color: #000;
+        border-color: var(--gold);
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-size: 11px;
+        background: rgba(255, 184, 0, 0.12);
+        color: var(--gold);
+      }
+
+      .tema-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 6px;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .tema-num {
+        width: 22px;
+        height: 22px;
+        background: var(--card2);
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        color: var(--text2);
+        flex-shrink: 0;
+      }
+      .tema-title {
+        flex: 1;
+      }
+      .tema-indicators {
+        display: flex;
+        gap: 5px;
+      }
+      .indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--text3);
+      }
+      .indicator.has-video {
+        background: var(--gold);
+      }
+      .indicator.has-pdf {
+        background: var(--green);
+      }
+
+      .curso-item {
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .curso-item:hover {
+        background: rgba(255, 184, 0, 0.08);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===================== LOGIN ===================== -->
+    <div id="login-screen">
+      <div id="login-box">
+        <h2>🔐 Panel Admin — AcademiApp</h2>
+        <div id="login-error" class="alert alert-error"></div>
+        <label>Correo</label>
+        <input
+          id="login-email"
+          type="email"
+          placeholder="tu-correo-admin@..."
+        />
+        <label>Contraseña</label>
+        <input id="login-pass" type="password" placeholder="••••••••" />
+        <button onclick="window.doLogin()">Entrar con correo</button>
+        <div
+          style="
+            text-align: center;
+            color: var(--text2);
+            font-size: 11px;
+            margin: 10px 0;
+          "
+        >
+          o
+        </div>
+        <button
+          onclick="window.doLoginGoogle()"
+          style="
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+          "
+        >
+          Continuar con Google
+        </button>
+        <p style="font-size: 11px; color: var(--text2); margin-top: 12px">
+          Usa tu misma cuenta admin de AcademiApp (la que tiene el permiso admin
+          activado).
+        </p>
+      </div>
+    </div>
+
+    <!-- ===================== APP ===================== -->
+    <div id="app">
+      <div id="sidebar">
+        <h2>🎓 AcademiApp</h2>
+        <nav>
+          <a id="nav-dashboard" onclick="window.showPage('dashboard')"
+            >📊 Dashboard</a
+          >
+          <a id="nav-cursos" onclick="window.showPage('cursos')"
+            >📚 Cursos y Temas</a
+          >
+          <a id="nav-examenes" onclick="window.showPage('examenes')"
+            >📝 Exámenes</a
+          >
+          <a id="nav-usuarios" onclick="window.showPage('usuarios')"
+            >👤 Usuarios</a
+          >
+          <a id="nav-pagos" onclick="window.showPage('pagos')"
+            >💰 Pagos</a
+          >
+        </nav>
+        <button id="btn-logout" onclick="window.doLogout()">
+          Cerrar sesión
+        </button>
+      </div>
+
+      <div id="main">
+        <!-- ---------- DASHBOARD ---------- -->
+        <div class="page active" id="page-dashboard">
+          <h1>Dashboard</h1>
+          <p class="subtitle">Resumen general</p>
+          <div class="grid2">
+            <div class="card">
+              <div style="font-size: 12px; color: var(--text2)">
+                Usuarios registrados
+              </div>
+              <div
+                style="font-size: 28px; font-weight: 700; color: var(--gold)"
+                id="stat-users"
+              >
+                —
+              </div>
+            </div>
+            <div class="card">
+              <div style="font-size: 12px; color: var(--text2)">
+                Cursos cargados
+              </div>
+              <div
+                style="font-size: 28px; font-weight: 700; color: var(--gold)"
+                id="stat-cursos"
+              >
+                —
+              </div>
+            </div>
+            <div class="card">
+              <div style="font-size: 12px; color: var(--text2)">
+                Exámenes cargados
+              </div>
+              <div
+                style="font-size: 28px; font-weight: 700; color: var(--gold)"
+                id="stat-examenes"
+              >
+                —
+              </div>
+            </div>
+            <div class="card">
+              <div style="font-size: 12px; color: var(--text2)">
+                Usuarios Premium
+              </div>
+              <div
+                style="font-size: 28px; font-weight: 700; color: var(--gold)"
+                id="stat-premium"
+              >
+                —
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- CURSOS Y TEMAS ---------- -->
+        <div class="page" id="page-cursos">
+          <h1>Cursos y Temas</h1>
+          <p class="subtitle">
+            Toca un curso, luego un tema, para editar su video y material
+          </p>
+          <div class="grid2">
+            <div class="card">
+              <div class="card-header"><h3>Cursos</h3></div>
+              <div id="cursos-lista"></div>
+            </div>
+            <div>
+              <div
+                class="card"
+                id="curso-temas-container"
+                style="display: none"
+              >
+                <div class="card-header">
+                  <h3 id="curso-temas-title">Temas</h3>
+                </div>
+                <div id="temas-lista"></div>
+              </div>
+              <div class="card" id="tema-editor" style="display: none">
+                <div class="card-header">
+                  <h3 id="tema-editor-title">Editar tema</h3>
+                </div>
+                <div id="alert-tema" class="alert"></div>
+                <div class="form-group">
+                  <label>ID del video de YouTube</label>
+                  <input id="tema-video" placeholder="ej: dQw4w9WgXcQ" />
+                </div>
+                <div
+                  id="pdf-actual"
+                  style="display: none; margin-bottom: 10px; font-size: 12px"
+                >
+                  Material actual:
+                  <a
+                    id="pdf-actual-link"
+                    href="#"
+                    target="_blank"
+                    style="color: var(--gold)"
+                    >Ver archivo</a
+                  >
+                </div>
+                <div
+                  class="drop-zone"
+                  id="pdf-drop"
+                  onclick="document.getElementById('pdf-file-input').click()"
+                >
+                  📎 Clic o arrastra el PDF del material
+                  <p
+                    style="font-size: 11px; margin-top: 4px"
+                    id="pdf-file-nombre"
+                  >
+                    Ningún archivo seleccionado
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  id="pdf-file-input"
+                  accept="application/pdf"
+                  style="display: none"
+                  onchange="window.seleccionarPdf(this)"
+                />
+                <div
+                  id="pdf-progreso"
+                  style="
+                    display: none;
+                    font-size: 11px;
+                    color: var(--gold);
+                    margin-top: 6px;
+                  "
+                >
+                  Subiendo... <span id="pdf-porciento">0%</span>
+                </div>
+                <div style="margin-top: 14px; display: flex; gap: 10px">
+                  <button
+                    class="btn btn-gold"
+                    id="btn-guardar-tema"
+                    onclick="window.guardarTema()"
+                  >
+                    💾 Guardar
+                  </button>
+                  <button
+                    class="btn btn-outline"
+                    onclick="window.abrirQuizIA()"
+                  >
+                    🧠 Quiz IA
+                  </button>
+                  <button
+                    class="btn btn-outline"
+                    onclick="window.cerrarTemaEditor()"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+
+              <div
+                class="modal-overlay"
+                id="quiz-ia-modal"
+                onclick="if (event.target === this) window.cerrarQuizIA();"
+              >
+                <div class="modal-box">
+                  <div
+                    class="card-header"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      justify-content: space-between;
+                    "
+                  >
+                    <h3>🧠 Quiz IA (por nivel)</h3>
+                    <button class="modal-close" onclick="window.cerrarQuizIA()">
+                      ✕
+                    </button>
+                  </div>
+                  <p
+                    style="
+                      font-size: 11px;
+                      color: var(--text2);
+                      margin-bottom: 12px;
+                    "
+                  >
+                    Se genera con Gemini a partir de la transcripción del video
+                    y el PDF de este tema. El alumno NUNCA ve un quiz que no
+                    hayas aprobado aquí primero.
+                  </p>
+                  <div id="quiz-ia-niveles"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- EXÁMENES ---------- -->
+        <div class="page" id="page-examenes">
+          <h1>Exámenes</h1>
+          <p class="subtitle">
+            Pasados (ordinario/exonerados) y tipo admisión (con tiempo)
+          </p>
+          <div class="grid2">
+            <div>
+              <div class="card">
+                <div class="card-header"><h3>Subir nuevo examen</h3></div>
+                <div id="alert-examen" class="alert"></div>
+                <div class="form-group">
+                  <label>Título del examen</label>
+                  <input
+                    id="examen-titulo"
+                    placeholder="Ej: Examen Ordinario 2024-I"
+                  />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Categoría</label>
+                    <select
+                      id="examen-categoria"
+                      onchange="window.toggleDuracion()"
+                    >
+                      <option value="ordinario">Ordinario (pasado)</option>
+                      <option value="exonerados">Exonerados (pasado)</option>
+                      <option value="admision">
+                        Admisión (con tiempo, Premium)
+                      </option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Año</label>
+                    <input id="examen-anio" type="number" placeholder="2024" />
+                  </div>
+                </div>
+                <div
+                  class="form-group"
+                  id="grupo-duracion"
+                  style="display: none"
+                >
+                  <label>Duración (minutos)</label>
+                  <input id="examen-duracion" type="number" placeholder="180" />
+                </div>
+                <div class="form-group">
+                  <label>Orden en la lista</label>
+                  <input id="examen-orden" type="number" placeholder="1" />
+                </div>
+                <div
+                  class="drop-zone"
+                  onclick="document.getElementById('examen-file').click()"
+                >
+                  📋 Clic o arrastra el JSON del examen
+                  <p
+                    style="font-size: 11px; margin-top: 4px"
+                    id="examen-file-name"
+                  >
+                    Ningún archivo seleccionado
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  id="examen-file"
+                  accept=".json"
+                  style="display: none"
+                  onchange="window.previewExamenJSON(this)"
+                />
+                <div style="margin-top: 14px; display: flex; gap: 10px">
+                  <button
+                    class="btn btn-gold"
+                    onclick="window.prepararSubidaExamen()"
+                  >
+                    ⬆ Subir examen
+                  </button>
+                  <button
+                    class="btn btn-outline"
+                    onclick="window.descargarEjemploExamen()"
+                  >
+                    ⬇ Descargar ejemplo
+                  </button>
+                </div>
+
+                <div
+                  id="imagenes-panel"
+                  style="display: none; margin-top: 20px"
+                >
+                  <div
+                    style="
+                      border-top: 1px solid var(--border);
+                      padding-top: 14px;
+                      margin-bottom: 10px;
+                    "
+                  >
+                    <strong style="font-size: 13px"
+                      >🖼️ Imágenes requeridas</strong
+                    >
+                    <span
+                      id="img-contador"
+                      style="font-size: 12px; color: var(--text2)"
+                    ></span>
+                    <p
+                      style="
+                        font-size: 11px;
+                        color: var(--text2);
+                        margin-top: 4px;
+                      "
+                    >
+                      El JSON referencia imágenes por nombre de archivo (no URL)
+                      en el campo <code>imagenSvg</code> (se acepta JPG, PNG o
+                      SVG — el campo mantiene ese nombre solo por compatibilidad
+                      con exámenes ya subidos). Súbelas aquí — si ya pusiste una
+                      URL completa (http...), no aparecerá en esta lista.
+                    </p>
+                  </div>
+                  <div id="imagenes-lista"></div>
+                  <button
+                    class="btn btn-gold"
+                    style="width: 100%; margin-top: 12px"
+                    onclick="window.subirExamenConImagenes()"
+                  >
+                    ✅ Confirmar y subir examen completo
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="card">
+                <div class="card-header"><h3>Preview</h3></div>
+                <div
+                  id="examen-preview"
+                  style="
+                    background: var(--bg);
+                    border-radius: 8px;
+                    padding: 12px;
+                    font-size: 11px;
+                    font-family: monospace;
+                    max-height: 380px;
+                    overflow-y: auto;
+                    color: var(--text2);
+                  "
+                >
+                  Selecciona un archivo JSON para ver el preview
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div
+              class="card-header"
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+              "
+            >
+              <h3>Exámenes subidos</h3>
+              <div class="tabs">
+                <button
+                  class="tab active"
+                  onclick="window.filtrarExamenes('ordinario', this)"
+                >
+                  Ordinario
+                </button>
+                <button
+                  class="tab"
+                  onclick="window.filtrarExamenes('exonerados', this)"
+                >
+                  Exonerados
+                </button>
+                <button
+                  class="tab"
+                  onclick="window.filtrarExamenes('admision', this)"
+                >
+                  Admisión
+                </button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Año</th>
+                  <th>Preguntas</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="examenes-table"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ---------- USUARIOS ---------- -->
+        <div class="page" id="page-usuarios">
+          <h1>Usuarios</h1>
+          <p class="subtitle">
+            Postulantes registrados, su plan y en qué día de su ruta de
+            estudio están
+          </p>
+          <div class="card">
+            <div class="card-header">
+              <h3>Buscar</h3>
+            </div>
+            <div class="form-group">
+              <input
+                id="usuarios-buscar"
+                placeholder="Buscar por nombre o correo..."
+                oninput="window.filtrarUsuarios(this.value)"
+              />
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Plan</th>
+                <th>Ruta iniciada</th>
+                <th>Día actual</th>
+              </tr>
+            </thead>
+            <tbody id="usuarios-table"></tbody>
+          </table>
+        </div>
+
+        <!-- ---------- PAGOS ---------- -->
+        <div class="page" id="page-pagos">
+          <h1>Pagos</h1>
+          <p class="subtitle">Comprobantes de Yape: pendientes, aprobados y rechazados</p>
+          <div class="tabs" style="margin-bottom: 16px">
+            <button
+              class="tab active"
+              onclick="window.filtrarPagos('pendiente', this)"
+            >
+              Pendientes
+            </button>
+            <button class="tab" onclick="window.filtrarPagos('aprobado', this)">
+              Aprobados
+            </button>
+            <button
+              class="tab"
+              onclick="window.filtrarPagos('rechazado', this)"
+            >
+              Rechazados
+            </button>
+          </div>
+          <div id="pagos-lista"></div>
+        </div>
+
+        <!-- ---------- MODAL COMPROBANTE ---------- -->
+        <div class="modal-overlay" id="comprobante-modal">
+          <div class="modal-box" style="max-width: 420px; text-align: center">
+            <div style="display: flex; justify-content: flex-end">
+              <button class="modal-close" onclick="window.cerrarComprobante()">
+                ✕
+              </button>
+            </div>
+            <img
+              id="comprobante-img"
+              src=""
+              style="width: 100%; border-radius: 10px"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        signInWithPopup,
+        GoogleAuthProvider,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        getDocs,
+        getDoc,
+        doc,
+        addDoc,
+        setDoc,
+        updateDoc,
+        deleteDoc,
+        deleteField,
+        query,
+        where,
+        orderBy,
+        writeBatch,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+      import {
+        getStorage,
+        ref,
+        uploadBytesResumable,
+        getDownloadURL,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+      import {
+        getFunctions,
+        httpsCallable,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
+
+      // ===================== CONFIG FIREBASE =====================
+      // Pega aquí el bloque que copiaste de Firebase Console → Configuración
+      // del proyecto → Tus apps → (App Web que acabas de crear).
+      const firebaseConfig = {
+        apiKey: "AIzaSyCnG1vFxe-UxbrtQst-6EchNSF2yqWnNts",
+        authDomain: "app-movil-ebc90.firebaseapp.com",
+        projectId: "app-movil-ebc90",
+        storageBucket: "app-movil-ebc90.firebasestorage.app",
+        messagingSenderId: "1020564538609",
+        appId: "1:1020564538609:web:617396d3505e813bea1550",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+      const storage = getStorage(app);
+      const functions = getFunctions(app);
+
+      // ===================== LOGIN (real, con Firebase Auth) =====================
+      async function entrarSiEsAdmin(user) {
+        const tokenResult = await user.getIdTokenResult(true);
+        if (tokenResult.claims.admin !== true) {
+          await signOut(auth);
+          throw new Error(
+            "Esta cuenta no tiene permiso de administrador en AcademiApp.",
+          );
+        }
+        document.getElementById("login-screen").classList.add("hidden");
+        document.getElementById("app").classList.add("show");
+        loadDashboard();
+        loadCursos();
+        loadUsuarios();
+        loadPagos("pendiente");
+        cargarExamenes("ordinario");
+      }
+
+      window.doLogin = async () => {
+        const email = document.getElementById("login-email").value.trim();
+        const pass = document.getElementById("login-pass").value;
+        const err = document.getElementById("login-error");
+        err.classList.remove("show");
+
+        if (!email || !pass) {
+          err.textContent = "❌ Completa correo y contraseña.";
+          err.classList.add("show");
+          return;
+        }
+
+        try {
+          const cred = await signInWithEmailAndPassword(auth, email, pass);
+          await entrarSiEsAdmin(cred.user);
+        } catch (e) {
+          err.textContent = "❌ " + (e.message || "No se pudo iniciar sesión.");
+          err.classList.add("show");
+        }
+      };
+
+      window.doLoginGoogle = async () => {
+        const err = document.getElementById("login-error");
+        err.classList.remove("show");
+        try {
+          const cred = await signInWithPopup(auth, new GoogleAuthProvider());
+          await entrarSiEsAdmin(cred.user);
+        } catch (e) {
+          err.textContent =
+            "❌ " + (e.message || "No se pudo iniciar sesión con Google.");
+          err.classList.add("show");
+        }
+      };
+
+      window.doLogout = async () => {
+        await signOut(auth);
+        document.getElementById("app").classList.remove("show");
+        document.getElementById("login-screen").classList.remove("hidden");
+        document.getElementById("login-pass").value = "";
+      };
+
+      // ===================== NAV =====================
+      window.showPage = (id) => {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll("#sidebar nav a")
+          .forEach((a) => a.classList.remove("active"));
+        document.getElementById("page-" + id).classList.add("active");
+        document.getElementById("nav-" + id).classList.add("active");
+      };
+
+      // ===================== DASHBOARD =====================
+      async function loadDashboard() {
+        try {
+          const users = await getDocs(collection(db, "users"));
+          document.getElementById("stat-users").textContent = users.size;
+          let premium = 0;
+          users.forEach((u) => {
+            if (u.data().plan === "premium") premium++;
+          });
+          document.getElementById("stat-premium").textContent = premium;
+        } catch (e) {
+          console.error("Error cargando usuarios:", e);
+        }
+
+        try {
+          const cursos = await getDocs(collection(db, "cursos"));
+          document.getElementById("stat-cursos").textContent = cursos.size;
+        } catch (e) {
+          console.error("Error cargando cursos:", e);
+        }
+
+        try {
+          const examenesIdx = await getDocs(collection(db, "examenesIndice"));
+          document.getElementById("stat-examenes").textContent =
+            examenesIdx.size;
+        } catch (e) {
+          console.error("Error cargando examenes:", e);
+        }
+      }
+
+      // ===================== USUARIOS =====================
+      // Mismo cálculo de "día lectivo" que usa el backend
+      // (diaLectivoActual en functions/index.js) — se replica aquí solo
+      // para MOSTRAR el número en la tabla, de lectura, no para decidir
+      // nada: la fuente de verdad sigue siendo el backend.
+      function fechaLimaYMD(date) {
+        const limaMs = date.getTime() - 5 * 60 * 60 * 1000;
+        const d = new Date(limaMs);
+        return {
+          y: d.getUTCFullYear(),
+          m: d.getUTCMonth(),
+          day: d.getUTCDate(),
+        };
+      }
+
+      function diaLectivoActualJS(fechaInicio) {
+        if (!fechaInicio) return null;
+        const inicio = fechaInicio.toDate ? fechaInicio.toDate() : new Date(fechaInicio);
+        const ahora = new Date();
+        const msPorDia = 24 * 60 * 60 * 1000;
+        const ini = fechaLimaYMD(inicio);
+        const fin = fechaLimaYMD(ahora);
+        let cursorMs = Date.UTC(ini.y, ini.m, ini.day);
+        const finMs = Date.UTC(fin.y, fin.m, fin.day);
+        let contador = 0;
+        while (cursorMs <= finMs) {
+          const dow = new Date(cursorMs).getUTCDay();
+          if (dow !== 0) contador++;
+          cursorMs += msPorDia;
+        }
+        return contador;
+      }
+
+      let usuariosData = [];
+
+      async function loadUsuarios() {
+        try {
+          const snap = await getDocs(collection(db, "users"));
+          usuariosData = snap.docs.map((d) => {
+            const u = d.data();
+            return {
+              nombre: u.nombre || "(sin nombre)",
+              correo: u.correo || "",
+              plan: u.plan || "free",
+              rutaIniciadaEn: u.rutaIniciadaEn || null,
+              diaActual: diaLectivoActualJS(u.rutaIniciadaEn),
+            };
+          });
+          renderUsuarios(usuariosData);
+        } catch (e) {
+          console.error("Error cargando usuarios:", e);
+        }
+      }
+
+      function renderUsuarios(lista) {
+        const tbody = document.getElementById("usuarios-table");
+        if (!tbody) return;
+        tbody.innerHTML = lista
+          .map((u) => {
+            const fecha = u.rutaIniciadaEn
+              ? (u.rutaIniciadaEn.toDate
+                  ? u.rutaIniciadaEn.toDate()
+                  : new Date(u.rutaIniciadaEn)
+                ).toLocaleDateString("es-PE")
+              : "—";
+            const planTag =
+              u.plan === "premium"
+                ? '<span class="badge">Premium</span>'
+                : "Free";
+            return `<tr>
+              <td>${u.nombre}</td>
+              <td>${u.correo}</td>
+              <td>${planTag}</td>
+              <td>${fecha}</td>
+              <td>${u.diaActual ?? "—"}</td>
+            </tr>`;
+          })
+          .join("");
+      }
+
+      window.filtrarUsuarios = (texto) => {
+        const q = texto.trim().toLowerCase();
+        if (!q) return renderUsuarios(usuariosData);
+        renderUsuarios(
+          usuariosData.filter(
+            (u) =>
+              u.nombre.toLowerCase().includes(q) ||
+              u.correo.toLowerCase().includes(q),
+          ),
+        );
+      };
+
+      // ===================== PAGOS =====================
+      let pagoEstadoActual = "pendiente";
+      const correoPorUidCache = {};
+
+      async function correoDeUid(uid) {
+        if (correoPorUidCache[uid]) return correoPorUidCache[uid];
+        try {
+          const snap = await getDoc(doc(db, "users", uid));
+          const correo = snap.exists() ? snap.data().correo || uid : uid;
+          correoPorUidCache[uid] = correo;
+          return correo;
+        } catch (e) {
+          return uid;
+        }
+      }
+
+      window.filtrarPagos = (estado, btn) => {
+        pagoEstadoActual = estado;
+        document
+          .querySelectorAll("#page-pagos .tab")
+          .forEach((t) => t.classList.remove("active"));
+        if (btn) btn.classList.add("active");
+        loadPagos(estado);
+      };
+
+      async function loadPagos(estado) {
+        const cont = document.getElementById("pagos-lista");
+        cont.innerHTML =
+          '<p style="color:var(--text2);font-size:13px">Cargando...</p>';
+        try {
+          const snap = await getDocs(
+            query(
+              collection(db, "pagos"),
+              where("estado", "==", estado),
+              orderBy("fecha", "desc"),
+            ),
+          );
+          if (snap.empty) {
+            cont.innerHTML = `<p style="color:var(--text2);font-size:13px">Sin comprobantes ${estado}s.</p>`;
+            return;
+          }
+          const filas = await Promise.all(
+            snap.docs.map(async (d) => {
+              const p = d.data();
+              const correo = await correoDeUid(p.uid);
+              const fecha = p.fecha?.toDate
+                ? p.fecha.toDate().toLocaleString("es-PE")
+                : "—";
+
+              let acciones = "";
+              if (estado === "pendiente") {
+                acciones = `
+                  <button class="btn btn-sm" style="background:var(--green);color:#fff" onclick="window.aprobarPago('${d.id}', this)">Aprobar</button>
+                  <button class="btn btn-outline btn-sm" style="border-color:var(--red);color:var(--red)" onclick="window.rechazarPago('${d.id}', this)">Rechazar</button>
+                `;
+              } else {
+                acciones = `
+                  <button class="btn btn-outline btn-sm" onclick="window.revertirPago('${d.id}', this)">↩ Revertir</button>
+                `;
+              }
+              const motivoTxt = p.motivo
+                ? `<div style="color:var(--text2);font-size:11px;margin-top:2px">Motivo: ${p.motivo}</div>`
+                : "";
+
+              return `
+                <div class="card" style="display:flex;gap:14px;align-items:center;margin-bottom:10px">
+                  <img
+                    src="${p.comprobanteUrl || ""}"
+                    onclick="window.verComprobante('${p.comprobanteUrl || ""}')"
+                    style="width:56px;height:56px;object-fit:cover;border-radius:8px;cursor:pointer;flex-shrink:0;background:#000"
+                  />
+                  <div style="flex:1">
+                    <div style="font-weight:600">${correo}</div>
+                    <div style="color:var(--text2);font-size:12px">S/ ${p.monto ?? "—"} · ${fecha}</div>
+                    ${motivoTxt}
+                  </div>
+                  <div style="display:flex;gap:8px;flex-shrink:0">${acciones}</div>
+                </div>
+              `;
+            }),
+          );
+          cont.innerHTML = filas.join("");
+        } catch (e) {
+          console.error("Error cargando pagos:", e);
+          cont.innerHTML = `<p style="color:var(--red);font-size:13px">Error: ${e.message}</p>`;
+        }
+      }
+
+      window.verComprobante = (url) => {
+        if (!url) return;
+        document.getElementById("comprobante-img").src = url;
+        document.getElementById("comprobante-modal").classList.add("show");
+      };
+      window.cerrarComprobante = () => {
+        document.getElementById("comprobante-modal").classList.remove("show");
+      };
+
+      window.aprobarPago = async (pagoId, btn) => {
+        btn.disabled = true;
+        btn.textContent = "...";
+        try {
+          await httpsCallable(functions, "aprobarPagoManual")({ pagoId });
+          loadPagos(pagoEstadoActual);
+        } catch (e) {
+          alert("Error: " + e.message);
+          btn.disabled = false;
+          btn.textContent = "Aprobar";
+        }
+      };
+
+      window.rechazarPago = async (pagoId, btn) => {
+        const motivo = prompt(
+          "Motivo del rechazo (opcional): borroso, monto no coincide, etc.",
+        );
+        if (motivo === null) return; // canceló
+        btn.disabled = true;
+        btn.textContent = "...";
+        try {
+          await httpsCallable(functions, "rechazarPagoManual")({
+            pagoId,
+            motivo,
+          });
+          loadPagos(pagoEstadoActual);
+        } catch (e) {
+          alert("Error: " + e.message);
+          btn.disabled = false;
+          btn.textContent = "Rechazar";
+        }
+      };
+
+      window.revertirPago = async (pagoId, btn) => {
+        if (
+          !confirm(
+            "¿Revertir esta decisión? Si estaba aprobado, se le quitará el Premium al usuario y el pago volverá a quedar pendiente.",
+          )
+        )
+          return;
+        btn.disabled = true;
+        btn.textContent = "...";
+        try {
+          await httpsCallable(functions, "revertirPagoManual")({ pagoId });
+          loadPagos(pagoEstadoActual);
+        } catch (e) {
+          alert("Error: " + e.message);
+          btn.disabled = false;
+          btn.textContent = "↩ Revertir";
+        }
+      };
+
+      // ===================== CURSOS Y TEMAS =====================
+      let cursosData = [];
+      let temaActual = null;
+      let pdfArchivoSeleccionado = null;
+      let pdfUrlActual = "";
+
+      async function loadCursos() {
+        const snap = await getDocs(
+          query(collection(db, "cursos"), orderBy("orden")),
+        );
+        cursosData = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const lista = document.getElementById("cursos-lista");
+        lista.innerHTML = cursosData
+          .map(
+            (c) => `
+          <div class="curso-item" onclick="window.seleccionarCurso('${c.id}')" id="curso-item-${c.id}">
+            <span style="font-size: 18px">${c.icono || "📚"}</span>
+            <div>
+              <div style="font-size: 13px; font-weight: 600">${c.nombre}</div>
+              <div style="font-size: 11px; color: var(--text2)">${c.area || ""}</div>
+            </div>
+          </div>`,
+          )
+          .join("");
+      }
+
+      window.seleccionarCurso = async (cursoId) => {
+        document
+          .querySelectorAll("[id^=curso-item-]")
+          .forEach((el) => (el.style.background = "transparent"));
+        const el = document.getElementById("curso-item-" + cursoId);
+        if (el) el.style.background = "rgba(255,184,0,0.08)";
+
+        const snap = await getDocs(
+          query(collection(db, "cursos", cursoId, "temas"), orderBy("orden")),
+        );
+        const curso = cursosData.find((c) => c.id === cursoId);
+
+        document.getElementById("curso-temas-title").textContent =
+          curso?.nombre || "Temas";
+        document.getElementById("curso-temas-container").style.display =
+          "block";
+        document.getElementById("tema-editor").style.display = "none";
+
+        document.getElementById("temas-lista").innerHTML = snap.docs
+          .map((d) => {
+            const t = d.data();
+            const hasVideo = !!(t.videoId && t.videoId !== "");
+            const hasPdf = !!(t.pdfUrl && t.pdfUrl !== "");
+            return `<div class="tema-row" onclick='window.editarTema("${cursoId}","${d.id}",${JSON.stringify(t.titulo || "")},${JSON.stringify(t.videoId || "")},${JSON.stringify(t.pdfUrl || "")})'>
+              <div class="tema-num">${t.orden ?? ""}</div>
+              <div class="tema-title">${t.titulo || ""}</div>
+              <div class="tema-indicators">
+                <div class="indicator ${hasVideo ? "has-video" : ""}" title="Video"></div>
+                <div class="indicator ${hasPdf ? "has-pdf" : ""}" title="PDF"></div>
+              </div>
+            </div>`;
+          })
+          .join("");
+      };
+
+      window.editarTema = (cursoId, temaId, titulo, videoId, pdfUrl) => {
+        temaActual = { cursoId, temaId };
+        pdfArchivoSeleccionado = null;
+        pdfUrlActual = pdfUrl || "";
+
+        document.getElementById("tema-editor").style.display = "block";
+        document.getElementById("tema-editor-title").textContent = titulo;
+        document.getElementById("tema-video").value = videoId || "";
+        document.getElementById("alert-tema").classList.remove("show");
+        document.getElementById("pdf-file-nombre").textContent =
+          "Ningún archivo seleccionado";
+        document.getElementById("pdf-progreso").style.display = "none";
+
+        const pdfActual = document.getElementById("pdf-actual");
+        if (pdfUrl) {
+          pdfActual.style.display = "block";
+          document.getElementById("pdf-actual-link").href = pdfUrl;
+        } else {
+          pdfActual.style.display = "none";
+        }
+      };
+
+      window.abrirQuizIA = () => {
+        if (!temaActual) return;
+        document.getElementById("quiz-ia-modal").classList.add("show");
+        cargarQuizIA(temaActual.cursoId, temaActual.temaId);
+      };
+
+      window.cerrarQuizIA = () => {
+        document.getElementById("quiz-ia-modal").classList.remove("show");
+      };
+
+      window.seleccionarPdf = (input) => {
+        const file = input.files[0];
+        if (!file) return;
+        if (file.type !== "application/pdf") {
+          showAlert("alert-tema", "error", "❌ Solo se permiten archivos PDF");
+          return;
+        }
+        pdfArchivoSeleccionado = file;
+        document.getElementById("pdf-file-nombre").textContent =
+          `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+      };
+
+      window.cerrarTemaEditor = () => {
+        document.getElementById("tema-editor").style.display = "none";
+        document.getElementById("quiz-ia-modal").classList.remove("show");
+        temaActual = null;
+        pdfArchivoSeleccionado = null;
+        pdfUrlActual = "";
+      };
+
+      // ===================== QUIZ IA (panel admin) =====================
+      const NIVELES_QUIZ = [
+        { id: "basico", nombre: "Básico" },
+        { id: "intermedio", nombre: "Intermedio" },
+        { id: "avanzado", nombre: "Avanzado" },
+      ];
+
+      async function cargarQuizIA(cursoId, temaId) {
+        const cont = document.getElementById("quiz-ia-niveles");
+        cont.innerHTML =
+          '<p style="font-size:12px;color:var(--text2)">Cargando...</p>';
+
+        let data = {};
+        try {
+          const snap = await getDoc(
+            doc(db, "cursos", cursoId, "temas", temaId, "premium", "contenido"),
+          );
+          data = snap.exists() ? snap.data() : {};
+        } catch (e) {
+          cont.innerHTML = `<p style="font-size:12px;color:var(--red)">Error cargando: ${e.message}</p>`;
+          return;
+        }
+
+        cont.innerHTML = "";
+        for (const nivel of NIVELES_QUIZ) {
+          cont.appendChild(construirBloqueNivel(cursoId, temaId, nivel, data));
+        }
+      }
+
+      function construirBloqueNivel(cursoId, temaId, nivel, data) {
+        const aprobado = data[`quiz_${nivel.id}`];
+        const borrador = data[`quiz_${nivel.id}_borrador`];
+        const tieneAprobado = Array.isArray(aprobado) && aprobado.length > 0;
+        const tieneBorrador = Array.isArray(borrador) && borrador.length > 0;
+
+        const bloque = document.createElement("div");
+        bloque.style.cssText =
+          "background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px";
+
+        // --- Encabezado: nombre + estado ---
+        const header = document.createElement("div");
+        header.style.cssText =
+          "display:flex; align-items:center; justify-content:space-between; margin-bottom: 8px";
+
+        const titulo = document.createElement("strong");
+        titulo.style.fontSize = "13px";
+        titulo.textContent = nivel.nombre;
+
+        const estado = document.createElement("span");
+        estado.style.cssText = "font-size: 11px; font-weight: 600";
+        if (tieneBorrador) {
+          estado.textContent = "⏳ Borrador pendiente de aprobar";
+          estado.style.color = "var(--gold)";
+        } else if (tieneAprobado) {
+          estado.textContent = "✅ Aprobado y publicado";
+          estado.style.color = "var(--green)";
+        } else {
+          estado.textContent = "— Sin generar";
+          estado.style.color = "var(--text2)";
+        }
+
+        header.appendChild(titulo);
+        header.appendChild(estado);
+        bloque.appendChild(header);
+
+        // --- Botones ---
+        const botones = document.createElement("div");
+        botones.style.cssText = "display:flex; gap: 8px; flex-wrap: wrap";
+
+        const btnGenerar = document.createElement("button");
+        btnGenerar.className = "btn btn-outline btn-sm";
+        btnGenerar.textContent =
+          tieneAprobado || tieneBorrador ? "🔄 Regenerar" : "✨ Generar";
+        btnGenerar.onclick = () =>
+          generarQuizNivel(cursoId, temaId, nivel, btnGenerar);
+        botones.appendChild(btnGenerar);
+
+        if (tieneBorrador || tieneAprobado) {
+          const btnVer = document.createElement("button");
+          btnVer.className = "btn btn-outline btn-sm";
+          btnVer.textContent = "👁 Ver / editar";
+          btnVer.onclick = () =>
+            toggleEditorNivel(
+              cursoId,
+              temaId,
+              nivel,
+              bloque,
+              borrador ?? aprobado,
+            );
+          botones.appendChild(btnVer);
+        }
+
+        if (tieneBorrador) {
+          const btnAprobar = document.createElement("button");
+          btnAprobar.className = "btn btn-gold btn-sm";
+          btnAprobar.textContent = "✅ Aprobar y publicar";
+          btnAprobar.onclick = () =>
+            aprobarQuizNivel(cursoId, temaId, nivel, btnAprobar);
+          botones.appendChild(btnAprobar);
+        }
+
+        bloque.appendChild(botones);
+        return bloque;
+      }
+
+      function toggleEditorNivel(cursoId, temaId, nivel, bloque, preguntas) {
+        const existente = bloque.querySelector(".quiz-editor-inline");
+        if (existente) {
+          existente.remove();
+          return;
+        }
+
+        const wrap = document.createElement("div");
+        wrap.className = "quiz-editor-inline";
+        wrap.style.marginTop = "10px";
+
+        const textarea = document.createElement("textarea");
+        textarea.value = JSON.stringify(preguntas ?? [], null, 2);
+        textarea.style.cssText =
+          "width:100%; min-height: 260px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: monospace; font-size: 11px; padding: 10px";
+        wrap.appendChild(textarea);
+
+        const hint = document.createElement("p");
+        hint.style.cssText =
+          "font-size: 10px; color: var(--text2); margin: 6px 0";
+        hint.textContent =
+          'Formato: [{"pregunta":"...", "opciones":["...","...","...","..."], "respuestaCorrecta":0, "explicacion":"..."}]. ' +
+          "Guardar deja esto como borrador pendiente de aprobar (aunque ya estuviera aprobado antes).";
+        wrap.appendChild(hint);
+
+        const btnGuardar = document.createElement("button");
+        btnGuardar.className = "btn btn-gold btn-sm";
+        btnGuardar.textContent = "💾 Guardar como borrador";
+        btnGuardar.onclick = () =>
+          guardarEdicionNivel(cursoId, temaId, nivel, textarea.value);
+        wrap.appendChild(btnGuardar);
+
+        bloque.appendChild(wrap);
+      }
+
+      async function generarQuizNivel(cursoId, temaId, nivel, btn) {
+        btn.disabled = true;
+        const textoOriginal = btn.textContent;
+        btn.textContent = "Generando...";
+        try {
+          const fn = httpsCallable(functions, "generarQuizAdmin");
+          await fn({ cursoId, temaId, nivel: nivel.id });
+          showAlert(
+            "alert-tema",
+            "success",
+            `✅ Quiz ${nivel.nombre} generado — revísalo antes de aprobar`,
+          );
+          cargarQuizIA(cursoId, temaId);
+        } catch (e) {
+          showAlert("alert-tema", "error", "❌ " + e.message);
+          btn.disabled = false;
+          btn.textContent = textoOriginal;
+        }
+      }
+
+      async function aprobarQuizNivel(cursoId, temaId, nivel, btn) {
+        btn.disabled = true;
+        try {
+          const ref = doc(
+            db,
+            "cursos",
+            cursoId,
+            "temas",
+            temaId,
+            "premium",
+            "contenido",
+          );
+          const snap = await getDoc(ref);
+          const borrador = (snap.data() || {})[`quiz_${nivel.id}_borrador`];
+          if (!Array.isArray(borrador) || borrador.length === 0) {
+            throw new Error("No hay borrador para aprobar.");
+          }
+          await updateDoc(ref, {
+            [`quiz_${nivel.id}`]: borrador,
+            [`quiz_${nivel.id}_borrador`]: deleteField(),
+          });
+          showAlert(
+            "alert-tema",
+            "success",
+            `✅ Quiz ${nivel.nombre} publicado — ya lo pueden ver los alumnos`,
+          );
+          cargarQuizIA(cursoId, temaId);
+        } catch (e) {
+          showAlert("alert-tema", "error", "❌ " + e.message);
+          btn.disabled = false;
+        }
+      }
+
+      async function guardarEdicionNivel(cursoId, temaId, nivel, textoJson) {
+        let parsed;
+        try {
+          parsed = JSON.parse(textoJson);
+        } catch {
+          showAlert("alert-tema", "error", "❌ JSON inválido");
+          return;
+        }
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+          showAlert(
+            "alert-tema",
+            "error",
+            "❌ Debe ser un array con preguntas",
+          );
+          return;
+        }
+        try {
+          const ref = doc(
+            db,
+            "cursos",
+            cursoId,
+            "temas",
+            temaId,
+            "premium",
+            "contenido",
+          );
+          await updateDoc(ref, { [`quiz_${nivel.id}_borrador`]: parsed });
+          showAlert(
+            "alert-tema",
+            "success",
+            "✅ Guardado como borrador — aprueba para publicarlo",
+          );
+          cargarQuizIA(cursoId, temaId);
+        } catch (e) {
+          showAlert("alert-tema", "error", "❌ " + e.message);
+        }
+      }
+
+      window.guardarTema = async () => {
+        if (!temaActual) return;
+        const videoId = document.getElementById("tema-video").value.trim();
+        const btn = document.getElementById("btn-guardar-tema");
+        btn.disabled = true;
+        btn.textContent = "Guardando...";
+
+        try {
+          let pdfUrl = pdfUrlActual;
+          if (pdfArchivoSeleccionado) {
+            pdfUrl = await subirPdfAStorage(
+              pdfArchivoSeleccionado,
+              temaActual.cursoId,
+              temaActual.temaId,
+            );
+          }
+
+          await updateDoc(
+            doc(db, "cursos", temaActual.cursoId, "temas", temaActual.temaId),
+            {
+              videoId,
+              pdfUrl,
+            },
+          );
+
+          showAlert("alert-tema", "success", "✅ Guardado correctamente");
+          pdfUrlActual = pdfUrl;
+          pdfArchivoSeleccionado = null;
+          document.getElementById("pdf-file-nombre").textContent =
+            "Ningún archivo seleccionado";
+          document.getElementById("pdf-progreso").style.display = "none";
+
+          window.seleccionarCurso(temaActual.cursoId);
+        } catch (e) {
+          showAlert("alert-tema", "error", "❌ Error: " + e.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "💾 Guardar";
+        }
+      };
+
+      async function subirPdfAStorage(file, cursoId, temaId) {
+        const ruta = `materiales/${cursoId}/${temaId}.pdf`;
+        const storageRef = ref(storage, ruta);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+        document.getElementById("pdf-progreso").style.display = "block";
+
+        return new Promise((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            (snap) => {
+              const pct = Math.round(
+                (snap.bytesTransferred / snap.totalBytes) * 100,
+              );
+              document.getElementById("pdf-porciento").textContent = pct + "%";
+            },
+            reject,
+            async () => resolve(await getDownloadURL(uploadTask.snapshot.ref)),
+          );
+        });
+      }
+
+      // Drag & drop PDF
+      document.addEventListener("DOMContentLoaded", () => {
+        const pdfDrop = document.getElementById("pdf-drop");
+        if (pdfDrop) {
+          pdfDrop.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            pdfDrop.classList.add("drag-over");
+          });
+          pdfDrop.addEventListener("dragleave", () =>
+            pdfDrop.classList.remove("drag-over"),
+          );
+          pdfDrop.addEventListener("drop", (e) => {
+            e.preventDefault();
+            pdfDrop.classList.remove("drag-over");
+            const file = e.dataTransfer.files[0];
+            if (file) {
+              pdfArchivoSeleccionado = file;
+              document.getElementById("pdf-file-nombre").textContent =
+                `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            }
+          });
+        }
+      });
+
+      // ===================== EXÁMENES =====================
+      let examenJsonData = null;
+      let imagenesRequeridas = {}; // nombre -> {file, url}
+
+      window.toggleDuracion = () => {
+        const categoria = document.getElementById("examen-categoria").value;
+        document.getElementById("grupo-duracion").style.display =
+          categoria === "admision" ? "block" : "none";
+      };
+
+      window.descargarEjemploExamen = () => {
+        const ejemplo = [
+          {
+            titulo: "Examen Ordinario 2024",
+            categoria: "ordinario",
+            anio: 2024,
+            orden: 1,
+            preguntas: [
+              {
+                pregunta: "¿Cuál es la capital de Perú?",
+                imagenSvg: "", // opcional: nombre de archivo, ej. "mapa1.jpg"
+                opciones: ["Cusco", "Lima", "Arequipa", "Trujillo"],
+                respuestaCorrecta: 1,
+                explicacion: "Lima es la capital desde la fundación española.",
+              },
+            ],
+          },
+        ];
+        const blob = new Blob([JSON.stringify(ejemplo, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "ejemplo_examen.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      window.previewExamenJSON = (input) => {
+        const file = input.files[0];
+        if (!file) return;
+        document.getElementById("examen-file-name").textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+            // Acepta tanto un examen suelto {...} como un array [ {...} ]
+            examenJsonData = Array.isArray(data) ? data[0] : data;
+            document.getElementById("examen-preview").textContent =
+              JSON.stringify(examenJsonData, null, 2).substring(0, 2000);
+            if (examenJsonData.titulo)
+              document.getElementById("examen-titulo").value =
+                examenJsonData.titulo;
+            if (examenJsonData.categoria)
+              document.getElementById("examen-categoria").value =
+                examenJsonData.categoria;
+            if (examenJsonData.anio)
+              document.getElementById("examen-anio").value =
+                examenJsonData.anio;
+            if (examenJsonData.orden)
+              document.getElementById("examen-orden").value =
+                examenJsonData.orden;
+            if (examenJsonData.duracionMinutos)
+              document.getElementById("examen-duracion").value =
+                examenJsonData.duracionMinutos;
+            window.toggleDuracion();
+            detectarImagenesSvg();
+          } catch {
+            showAlert("alert-examen", "error", "❌ JSON inválido");
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      function detectarImagenesSvg() {
+        if (!examenJsonData) return;
+        const preguntas = examenJsonData.preguntas || [];
+        imagenesRequeridas = {};
+        for (const p of preguntas) {
+          const val = p.imagenSvg;
+          // Solo pedimos subida si NO es ya una URL completa
+          if (val && val !== "" && !val.startsWith("http")) {
+            imagenesRequeridas[val] = { file: null, url: null };
+          }
+        }
+        const nombres = Object.keys(imagenesRequeridas);
+        const panel = document.getElementById("imagenes-panel");
+        if (nombres.length === 0) {
+          panel.style.display = "none";
+          return;
+        }
+        panel.style.display = "block";
+        document.getElementById("img-contador").textContent =
+          `(${nombres.length} imagen${nombres.length > 1 ? "es" : ""})`;
+        const lista = document.getElementById("imagenes-lista");
+        lista.innerHTML = "";
+        // Construimos cada fila con el DOM directamente (createElement),
+        // NO con un template de HTML + onchange="...JSON.stringify(nombre)".
+        // Antes, el nombre del archivo se inyectaba dentro de un atributo
+        // onchange delimitado por comillas dobles, y JSON.stringify(nombre)
+        // también genera comillas dobles -> el navegador cortaba el
+        // atributo ahí mismo, dejaba el handler incompleto
+        // ("Uncaught SyntaxError: Unexpected end of input") y el input de
+        // archivo nunca llamaba a seleccionarImagenExamen. Con createElement
+        // el nombre queda en el closure de la función, nunca pasa por texto
+        // HTML, así que no hay forma de que se rompa.
+        for (const nombre of nombres) {
+          const fila = document.createElement("div");
+          fila.style.cssText =
+            "background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px";
+
+          const info = document.createElement("div");
+          info.style.cssText = "flex: 1; min-width: 0";
+
+          const nombreDiv = document.createElement("div");
+          nombreDiv.style.cssText =
+            "font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap";
+          nombreDiv.textContent = nombre;
+
+          const labelEstado = document.createElement("div");
+          labelEstado.id = `img-label-${CSS.escape(nombre)}`;
+          labelEstado.style.cssText =
+            "font-size: 11px; color: var(--text2); margin-top: 2px";
+          labelEstado.textContent = "Sin archivo seleccionado";
+
+          info.appendChild(nombreDiv);
+          info.appendChild(labelEstado);
+
+          const label = document.createElement("label");
+          label.className = "btn btn-outline btn-sm";
+          label.style.cursor = "pointer";
+          label.append("📂 Imagen");
+
+          const input = document.createElement("input");
+          input.type = "file";
+          input.accept =
+            ".jpg,.jpeg,.png,.svg,image/jpeg,image/png,image/svg+xml";
+          input.style.display = "none";
+          input.addEventListener("change", () =>
+            window.seleccionarImagenExamen(input, nombre),
+          );
+
+          label.appendChild(input);
+          fila.appendChild(info);
+          fila.appendChild(label);
+          lista.appendChild(fila);
+        }
+      }
+
+      window.seleccionarImagenExamen = (input, nombre) => {
+        const file = input.files[0];
+        if (!file) return;
+        imagenesRequeridas[nombre] = { file, url: null };
+        const label = document.getElementById(
+          `img-label-${CSS.escape(nombre)}`,
+        );
+        label.textContent = `✓ ${file.name}`;
+        label.style.color = "var(--green)";
+      };
+
+      window.prepararSubidaExamen = () => {
+        const titulo = document.getElementById("examen-titulo").value.trim();
+        if (!titulo) {
+          showAlert("alert-examen", "error", "❌ Completa el título");
+          return;
+        }
+        if (!examenJsonData || !Array.isArray(examenJsonData.preguntas)) {
+          showAlert(
+            "alert-examen",
+            "error",
+            '❌ Selecciona un JSON con un array "preguntas"',
+          );
+          return;
+        }
+        const faltantes = Object.entries(imagenesRequeridas).filter(
+          ([, v]) => !v.file && !v.url,
+        );
+        if (faltantes.length > 0) {
+          showAlert(
+            "alert-examen",
+            "error",
+            `❌ Faltan ${faltantes.length} imágenes por seleccionar.`,
+          );
+          document
+            .getElementById("imagenes-panel")
+            .scrollIntoView({ behavior: "smooth" });
+          return;
+        }
+        window.subirExamenConImagenes();
+      };
+
+      window.subirExamenConImagenes = async () => {
+        const titulo = document.getElementById("examen-titulo").value.trim();
+        const categoria = document.getElementById("examen-categoria").value;
+        const anio =
+          parseInt(document.getElementById("examen-anio").value) || null;
+        const orden =
+          parseInt(document.getElementById("examen-orden").value) || 0;
+        const duracionMinutos =
+          categoria === "admision"
+            ? parseInt(document.getElementById("examen-duracion").value) || null
+            : null;
+        const preguntas = JSON.parse(JSON.stringify(examenJsonData.preguntas));
+
+        const btn =
+          document.querySelector("#imagenes-panel .btn-gold") ||
+          document.querySelector("#page-examenes .btn-gold");
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Subiendo...";
+        }
+
+        try {
+          // 1. Subir imágenes pendientes a Storage (JPG/PNG/SVG, según lo
+          // que el admin haya seleccionado para cada nombre)
+          const nombresImg = Object.keys(imagenesRequeridas);
+          for (let i = 0; i < nombresImg.length; i++) {
+            const nombre = nombresImg[i];
+            const { file } = imagenesRequeridas[nombre];
+            if (!file) continue;
+            const ruta = `examenes_imagenes/${Date.now()}_${nombre}`;
+            const storageRef = ref(storage, ruta);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+            const url = await new Promise((resolve, reject) => {
+              uploadTask.on("state_changed", null, reject, async () =>
+                resolve(await getDownloadURL(uploadTask.snapshot.ref)),
+              );
+            });
+            imagenesRequeridas[nombre].url = url;
+          }
+
+          // 2. Reemplazar nombres por URLs en las preguntas
+          for (const p of preguntas) {
+            if (p.imagenSvg && imagenesRequeridas[p.imagenSvg]?.url) {
+              p.imagenSvg = imagenesRequeridas[p.imagenSvg].url;
+            }
+          }
+
+          // 3. Escribir en las DOS colecciones (examenes = privado, examenesIndice = público)
+          // en un solo batch, igual que lo hace la app móvil.
+          const examenRef = doc(collection(db, "examenes"));
+          const indiceRef = doc(db, "examenesIndice", examenRef.id);
+          const batch = writeBatch(db);
+          batch.set(examenRef, {
+            titulo,
+            categoria,
+            anio,
+            duracionMinutos,
+            preguntas,
+          });
+          batch.set(indiceRef, {
+            titulo,
+            categoria,
+            anio,
+            orden,
+            duracionMinutos,
+            totalPreguntas: preguntas.length,
+          });
+          await batch.commit();
+
+          showAlert(
+            "alert-examen",
+            "success",
+            `✅ Examen subido con ${preguntas.length} preguntas`,
+          );
+
+          document.getElementById("examen-titulo").value = "";
+          document.getElementById("examen-anio").value = "";
+          document.getElementById("examen-orden").value = "";
+          document.getElementById("examen-duracion").value = "";
+          document.getElementById("examen-file-name").textContent =
+            "Ningún archivo seleccionado";
+          document.getElementById("examen-preview").textContent =
+            "Selecciona un archivo JSON";
+          document.getElementById("imagenes-panel").style.display = "none";
+          examenJsonData = null;
+          imagenesRequeridas = {};
+          cargarExamenes(categoria);
+        } catch (e) {
+          showAlert("alert-examen", "error", "❌ Error: " + e.message);
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = "✅ Confirmar y subir examen completo";
+          }
+        }
+      };
+
+      window.filtrarExamenes = (categoria, btn) => {
+        document
+          .querySelectorAll("#page-examenes .tab")
+          .forEach((t) => t.classList.remove("active"));
+        btn.classList.add("active");
+        cargarExamenes(categoria);
+      };
+
+      async function cargarExamenes(categoria) {
+        const tbody = document.getElementById("examenes-table");
+        tbody.innerHTML =
+          '<tr><td colspan="4" style="text-align:center;color:var(--text2)">Cargando...</td></tr>';
+        try {
+          const snap = await getDocs(
+            query(
+              collection(db, "examenesIndice"),
+              where("categoria", "==", categoria),
+              orderBy("orden"),
+            ),
+          );
+          if (snap.empty) {
+            tbody.innerHTML =
+              '<tr><td colspan="4" style="text-align:center;color:var(--text2)">Sin exámenes</td></tr>';
+            return;
+          }
+          tbody.innerHTML = snap.docs
+            .map((d) => {
+              const data = d.data();
+              return `<tr>
+                <td><strong>${data.titulo}</strong></td>
+                <td style="color:var(--text2)">${data.anio ?? "—"}</td>
+                <td style="color:var(--gold)">${data.totalPreguntas ?? 0} preg.</td>
+                <td><button class="btn btn-outline btn-sm" onclick="window.eliminarExamen('${d.id}','${categoria}')">🗑</button></td>
+              </tr>`;
+            })
+            .join("");
+        } catch (e) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--red)">Error: ${e.message}</td></tr>`;
+        }
+      }
+
+      window.eliminarExamen = async (examenId, categoria) => {
+        if (!confirm("¿Eliminar este examen? No se puede deshacer.")) return;
+        // Fix (specs/panel-admin/requirements.md, hallazgo menor R3): antes
+        // eran dos deleteDoc secuenciales — si el segundo fallaba (ej. corte
+        // de red entre ambos), quedaba un examen huérfano en una sola
+        // colección. Ahora se borran ambos documentos en un solo batch,
+        // igual que ya hace la creación de examen (D4).
+        const batch = writeBatch(db);
+        batch.delete(doc(db, "examenesIndice", examenId));
+        batch.delete(doc(db, "examenes", examenId));
+        await batch.commit();
+        cargarExamenes(categoria);
+      };
+
+      // ===================== UTIL =====================
+      function showAlert(id, type, msg) {
+        const el = document.getElementById(id);
+        el.textContent = msg;
+        el.className = "alert alert-" + type + " show";
+        setTimeout(() => el.classList.remove("show"), 4000);
+      }
+    </script>
+  </body>
+</html>
