@@ -6,7 +6,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --testPathIgnorePatterns=firestore.rules.test.js",
     "test:rules": "firebase emulators:exec --only firestore \"jest test/firestore.rules.test.js\""
   },
   "dependencies": {
